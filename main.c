@@ -1,4 +1,5 @@
 #include "cJSON.h"
+#include "utilities/create.c"
 #include <stdio.h>
 #include <string.h>
 
@@ -19,10 +20,6 @@ int help() {
 int main() {
     char a[100];
 
-    printf("Nikhil's Terminal\n\n");
-    printf("Welcome To Nikhil's Terminal\n");
-    printf("Type \"help\" for more things!\n\n");
-
     while(1){
 
         printf(">>> ");
@@ -33,6 +30,8 @@ int main() {
 
         help();
 
+        } else if (strcmp(a, "create") == 0) {
+            create();
         }
 
     }
