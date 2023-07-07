@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <sys/stat.h>
+#include <stdlib.h>
 
 int create(char *name) {
     printf(name);
 
-    const char* folderName = "databases";
+    char folderName[] = "databases";
     struct stat st;
 
     // Check if folder exists
@@ -26,5 +27,20 @@ int create(char *name) {
         }
     }
 
+
+    // Create the file
+    char fileName[100];
+    sprintf(fileName, "%s/%s.json", folderName, name);
+
+    FILE *file = fopen(fileName, "w");
+    if (file == NULL) {
+        printf("Failed to create file.\n");
+        return 1;
+    }
+
+    printf("File created: %s\n", fileName);
+
+    fclose(file);
+    
     return 0;
 }
