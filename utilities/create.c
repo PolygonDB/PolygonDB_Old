@@ -18,9 +18,7 @@ int create(char *name) {
     }
     else {
         // Create the folder
-        int status = mkdir(folderName);
-
-        if (status == 0) {
+        if (mkdir(folderName) == 0) {
             printf("Folder created.\n");
         }
         else {
