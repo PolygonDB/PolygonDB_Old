@@ -2,8 +2,14 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 
+// Creates the json file
+
+//It checks if database folder exists, if not then make it. 
+//Next it creates the json file
+
+//Arguements:
+//name -> Name of json file being created
 int create(char *name) {
-    printf(name);
 
     char folderName[] = "databases";
     struct stat st;
