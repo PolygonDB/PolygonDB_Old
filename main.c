@@ -1,7 +1,9 @@
 #include "cJSON.h"
 #include "utilities/create.c"
+#include "utilities/splitstrings.c"
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 int help() {
     printf("\nPolygonDB Commands\n\n");
@@ -18,20 +20,39 @@ int help() {
 
 
 int main() {
-    char a[100];
+    char input[100];
+    int count = 0;
 
     while(1){
 
+        //Beginning of Terminal
         printf(">>> ");
-        fflush(stdin);
-        scanf("%s", a);
+        fgets(input, sizeof(input), stdin);
+        int length = strlen(input);
+        if (length > 0 && input[length - 1] == '\n') {
+            input[length - 1] = '\0';
+        }
 
-        if(strcmp(a, "help") == 0){
+        //Parsing
+        char **result = fields(input, &count);
+        printf("%d\n", count);
 
-        help();
+        for (int i = 0; i < count; i++) {
+            printf("%s\n", result[i]);
+            free(result[i]);
+        }
+        free(result);
 
-        } else if (strcmp(a, "create") == 0) {
+
+        //Searching for Appriopriate Command
+        if(strcmp(input, "help") == 0){
+
+            help();
+
+        } else if (strcmp(input, "create") == 0) {
+            
             create();
+        
         }
 
     }
