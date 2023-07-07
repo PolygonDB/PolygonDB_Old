@@ -20,7 +20,7 @@ int help() {
 
 
 int main() {
-    char input[100];
+    char input[1000];
     int count = 0;
 
     while(1){
@@ -35,25 +35,24 @@ int main() {
 
         //Parsing
         char **result = fields(input, &count);
-        printf("%d\n", count);
-
-        for (int i = 0; i < count; i++) {
-            printf("%s\n", result[i]);
-            free(result[i]);
-        }
-        free(result);
 
 
         //Searching for Appriopriate Command
         if(strcmp(input, "help") == 0){
-
+            //Shows command options
             help();
 
-        } else if (strcmp(input, "create") == 0) {
-            
-            create();
+        } else if (strcmp(input, "create") == 0 && count >= 2) {
+            //Creates json file
+            create(result[1]);
         
         }
+
+        
+        for (int i = 0; i < count; i++) {
+            free(result[i]);
+        }
+        free(result);
 
     }
 
