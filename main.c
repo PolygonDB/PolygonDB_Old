@@ -21,7 +21,6 @@ int help() {
 
 
 typedef struct {
-    const char* Pass;
     const char* Dbname;
     const char* Loc;
     const char* Act;
