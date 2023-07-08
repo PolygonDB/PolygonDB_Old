@@ -21,12 +21,12 @@ int help() {
 
 
 typedef struct {
-    const char* password;
-    const char* dbname;
-    const char* location;
-    const char* action;
-    int value;
-}Inputdata;
+    const char* Pass;
+    const char* Dbname;
+    const char* Loc;
+    const char* Act;
+    void* Val;
+} Input;
 
 int main() {
     char *input;
