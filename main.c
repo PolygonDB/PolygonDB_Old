@@ -2,6 +2,7 @@
 #include "utilities/create.c"
 #include "utilities/splitstrings.c"
 #include "utilities/record.c"
+#include "utilities/structparse.c"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -20,15 +21,8 @@ int help() {
 }
 
 
-typedef struct {
-    const char* Dbname;
-    const char* Loc;
-    const char* Act;
-    void* Val;
-} Input;
-
 int main() {
-    char *input;
+    char input[9999];
     int count = 0;
 
     while(1){
@@ -44,8 +38,22 @@ int main() {
         cJSON* root = cJSON_Parse(input);
         //Checks if input can be parsed.
         if (root != NULL) {
-            printf("Parsing JSON failed.\n");
-            return 0;
+            
+            Input inputdata;
+            memset(&inputdata, 0, sizeof(inputdata));
+
+            parseInputJson(input, &inputdata);
+
+            printf("Dbname: %s\n", inputdata.Dbname);
+            printf("Loc: %s\n", inputdata.Loc);
+            printf("Act: %s\n", inputdata.Act);
+            printf_s("Value: %f\n", *((double*)inputdata.Val));
+
+            free((void*)inputdata.Dbname);
+            free((void*)inputdata.Loc);
+            free((void*)inputdata.Act);
+            free(inputdata.Val);
+            
         } else {
 
             char **result = fields(input, &count);
