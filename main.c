@@ -1,6 +1,7 @@
 #include "cJSON.h"
 #include "utilities/create.c"
 #include "utilities/splitstrings.c"
+#include "utilities/record.c"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -19,8 +20,16 @@ int help() {
 }
 
 
+typedef struct {
+    const char* password;
+    const char* dbname;
+    const char* location;
+    const char* action;
+    int value;
+}Inputdata;
+
 int main() {
-    char input[1000];
+    char *input;
     int count = 0;
 
     while(1){
@@ -33,28 +42,37 @@ int main() {
             input[length - 1] = '\0';
         }
 
-        //Parsing
-        char **result = fields(input, &count);
+        cJSON* root = cJSON_Parse(input);
+        //Checks if input can be parsed.
+        if (root != NULL) {
+            printf("Parsing JSON failed.\n");
+            return 0;
+        } else {
 
+            char **result = fields(input, &count);
 
-        //Searching for Appriopriate Command
-        if(strcmp(input, "help") == 0){
-            //Shows command options
-            help();
+            if(strcmp(input, "help") == 0){
 
-        } else if (strcmp(input, "create") == 0 && count >= 2) {
-            //Creates json file
-            create(result[1]);
-        
+                //Shows command options
+                help();
+
+            } else if (strcmp(input, "create") == 0 && count >= 2) {
+
+                //Creates json file
+                create(result[1]);
+            
+            }
+
+            //free result
+            for (int i = 0; i < count; i++) {
+                free(result[i]);
+            }
+            free(result);
         }
-
-        
-        for (int i = 0; i < count; i++) {
-            free(result[i]);
-        }
-        free(result);
 
     }
+
+    free(input);
 
    return 0;
 }
