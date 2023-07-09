@@ -3,40 +3,47 @@
 #include <string.h>
 #include "../cJSON.h"
 
+typedef enum {
+    TYPE_INT,
+    TYPE_DOUBLE,
+    TYPE_BOOL,
+    TYPE_STRING,
+    TYPE_ARRAY,
+    TYPE_OBJECT
+} ValueType;
+
 typedef struct {
     const char* Dbname;
     const char* Loc;
     const char* Act;
     void* Val;
+    ValueType ValType;
 } Input;
 
-void sassignJsonValue(cJSON* jsonValue, void** outputValue) {
-    if (cJSON_IsBool(jsonValue)) {
+void sassignJsonValue(cJSON* jsonValue, void** outputValue, ValueType* outputType) {
+    if (cJSON_IsNumber(jsonValue)) {
+        if (jsonValue->valuedouble == (double)jsonValue->valueint) {
+            *outputType = TYPE_INT;
+            *outputValue = malloc(sizeof(int));
+            *((int*)*outputValue) = jsonValue->valueint;
+        } else {
+            *outputType = TYPE_DOUBLE;
+            *outputValue = malloc(sizeof(double));
+            *((double*)*outputValue) = jsonValue->valuedouble;
+        }
+    } else if (cJSON_IsBool(jsonValue)) {
+        *outputType = TYPE_BOOL;
         *outputValue = malloc(sizeof(int));
         *((int*)*outputValue) = cJSON_IsTrue(jsonValue) ? 1 : 0;
-    } else if (cJSON_IsNumber(jsonValue)) {
-        *outputValue = malloc(sizeof(double));
-        *((double*)*outputValue) = jsonValue->valuedouble;
     } else if (cJSON_IsString(jsonValue)) {
+        *outputType = TYPE_STRING;
         *outputValue = strdup(jsonValue->valuestring);
     } else if (cJSON_IsArray(jsonValue)) {
-        // Handling array values depends on your specific requirements
-        // You can choose to store them as an array or any other appropriate data structure
-        // This example shows storing the first element of the array as a string
-        cJSON* firstElement = cJSON_GetArrayItem(jsonValue, 0);
-        if (cJSON_IsString(firstElement)) {
-            *outputValue = strdup(firstElement->valuestring);
-        }
+        *outputType = TYPE_ARRAY;
+        *outputValue = cJSON_Print(jsonValue);
     } else if (cJSON_IsObject(jsonValue)) {
-        // Handling object values depends on your specific requirements
-        // You can choose to store them as a nested struct or any other appropriate data structure
-        // This example shows storing the first key-value pair as two separate strings
-        cJSON* child = jsonValue->child;
-        if (child != NULL && cJSON_IsString(child) && cJSON_IsString(child->next)) {
-            *outputValue = malloc(sizeof(char*) * 2);
-            *((char**)*outputValue) = strdup(child->valuestring);
-            *((char**)(*outputValue + sizeof(char*))) = strdup(child->next->valuestring);
-        }
+        *outputType = TYPE_OBJECT;
+        *outputValue = cJSON_Print(jsonValue);
     }
     // You can add additional logic for other value types as needed
 }
@@ -66,15 +73,15 @@ void parseInputJson(const char* jsonString, Input* input) {
 
     cJSON* val = cJSON_GetObjectItemCaseSensitive(root, "value");
     if (val != NULL) {
-        sassignJsonValue(val, &input->Val);
+        sassignJsonValue(val, &input->Val, &input->ValType);
     }
 
     // Clean up cJSON
     cJSON_Delete(root);
 }
 
-int main2() {
-    const char* jsonString = "{\"dbname\":\"CatoDB\",\"location\":\"rows.0.age\",\"action\":\"record\",\"value\":5.1}";
+int ex() {
+    const char* jsonString = "{\"dbname\":\"CatoDB\",\"location\":\"rows.0.age\",\"action\":\"record\",\"value\":{\"key\":\"value\"}}";
 
     Input input;
     memset(&input, 0, sizeof(Input));
@@ -85,7 +92,30 @@ int main2() {
     printf("Dbname: %s\n", input.Dbname);
     printf("Loc: %s\n", input.Loc);
     printf("Act: %s\n", input.Act);
-    printf_s("Value: %f\n", *((double*)input.Val));
+
+    // Determine the variable type of Val
+    switch (input.ValType) {
+        case TYPE_INT:
+            printf("Value (int): %d\n", *((int*)input.Val));
+            break;
+        case TYPE_DOUBLE:
+            printf("Value (double): %f\n", *((double*)input.Val));
+            break;
+        case TYPE_BOOL:
+            printf("Value (bool): %s\n", *((int*)input.Val) ? "true" : "false");
+            break;
+        case TYPE_STRING:
+            printf("Value (string): %s\n", (char*)input.Val);
+            break;
+        case TYPE_ARRAY:
+            printf("Value (array):%s\n", (char*)input.Val);
+            break;
+        case TYPE_OBJECT:
+            printf("Value (object): %s\n", (char*)input.Val);
+            break;
+        default:
+            printf("Unknown value type.\n");
+    }
 
     // Clean up allocated memory
     free((void*)input.Dbname);

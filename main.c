@@ -47,7 +47,29 @@ int main() {
             printf("Dbname: %s\n", inputdata.Dbname);
             printf("Loc: %s\n", inputdata.Loc);
             printf("Act: %s\n", inputdata.Act);
-            printf_s("Value: %f\n", *((double*)inputdata.Val));
+
+            switch (inputdata.ValType) {
+                case TYPE_INT:
+                    printf("Value (int): %d\n", *((int*)inputdata.Val));
+                    break;
+                case TYPE_DOUBLE:
+                    printf("Value (double): %f\n", *((double*)inputdata.Val));
+                    break;
+                case TYPE_BOOL:
+                    printf("Value (bool): %s\n", *((int*)inputdata.Val) ? "true" : "false");
+                    break;
+                case TYPE_STRING:
+                    printf("Value (string): %s\n", (char*)inputdata.Val);
+                    break;
+                case TYPE_ARRAY:
+                    printf("Value (array):%s\n", (char*)inputdata.Val);
+                    break;
+                case TYPE_OBJECT:
+                    printf("Value (object): %s\n", (char*)inputdata.Val);
+                    break;
+                default:
+                    printf("Unknown value type.\n");
+            }
 
             free((void*)inputdata.Dbname);
             free((void*)inputdata.Loc);
