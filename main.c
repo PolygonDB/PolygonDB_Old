@@ -71,6 +71,10 @@ int main() {
                     printf("Unknown value type.\n");
             }
 
+            if(strcmp(inputdata.Act, "record") == 0) {
+                record(inputdata.Dbname);
+            }
+
             free((void*)inputdata.Dbname);
             free((void*)inputdata.Loc);
             free((void*)inputdata.Act);

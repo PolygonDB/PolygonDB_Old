@@ -4,7 +4,7 @@
 #include "../cJSON.c"
 
 
-void record(char *db) {
+void record(const char *db) {
     // Specify the file path
     char file_path[100];
     sprintf(file_path, "databases/%s.json", db);
