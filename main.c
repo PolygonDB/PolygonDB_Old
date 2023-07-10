@@ -1,3 +1,4 @@
+#include "utilities/type.c"
 #include "cJSON.h"
 #include "utilities/create.c"
 #include "utilities/splitstrings.c"
@@ -72,7 +73,7 @@ int main() {
             }
 
             if(strcmp(inputdata.Act, "record") == 0) {
-                record(inputdata.Dbname);
+                record(inputdata.Dbname, inputdata.Loc, inputdata.Val, inputdata.ValType);
             }
 
             free((void*)inputdata.Dbname);
@@ -106,6 +107,5 @@ int main() {
     }
 
     free(input);
-
    return 0;
 }

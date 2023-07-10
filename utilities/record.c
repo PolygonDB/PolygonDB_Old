@@ -1,92 +1,113 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../cJSON.c"
+#include "../cJSON.h"
 
 
-void record(const char *db) {
-    // Specify the file path
-    char file_path[100];
-    sprintf(file_path, "databases/%s.json", db);
+cJSON *createValue(void *val, ValueType valType) {
+    switch (valType) {
+        case TYPE_INT:
+            return cJSON_CreateNumber(*(int *)val);
+        case TYPE_DOUBLE:
+            return cJSON_CreateNumber(*(double *)val);
+        case TYPE_BOOL:
+            return cJSON_CreateBool(*(int *)val);
+        case TYPE_STRING:
+            return cJSON_CreateString((char *)val);
+        default:
+            return NULL;
+    }
+}
 
-    // Open the file in read mode
-    FILE* file = fopen(file_path, "r");
+void setValue(cJSON *json, const char *location, void *val, ValueType valType) {
+    cJSON *parent = json;
 
-    // Check if the file exists
+    char *path = strdup(location);
+    char *token = strtok(path, ".");
+    cJSON *child = parent;
+    char *lastToken = token;
+
+    if (child != NULL) {
+        // Update the value of an existing variable at the specified location
+        switch (valType) {
+            case TYPE_INT:
+                cJSON_ReplaceItemInObject(parent, lastToken, cJSON_CreateNumber(*(int *)val));
+                break;
+            case TYPE_DOUBLE:
+                cJSON_ReplaceItemInObject(parent, lastToken, cJSON_CreateNumber(*(double *)val));
+                break;
+            case TYPE_BOOL:
+                cJSON_ReplaceItemInObject(parent, lastToken, cJSON_CreateBool(*(int *)val));
+                break;
+            case TYPE_STRING:
+                cJSON_ReplaceItemInObject(parent, lastToken, cJSON_CreateString((char *)val));
+                break;
+            case TYPE_ARRAY:
+                cJSON_ReplaceItemInObject(parent, lastToken, cJSON_CreateString((char *)val));
+                break;
+            case TYPE_OBJECT:
+                cJSON_ReplaceItemInObject(parent, lastToken, cJSON_CreateString((char *)val));
+                break;
+            default:
+                break;
+        }
+    } else {
+        // Add a new variable to the JSON at the specified location
+        cJSON_AddItemToObject(parent, lastToken, createValue(val, valType));
+    }
+
+    free(path);
+}
+
+
+
+void record(const char *dbname, const char *location, void *val, ValueType valType) {
+    // Step 1: Check if the file exists
+    char filepath[100];
+    sprintf(filepath, "databases/%s.json", dbname);
+    FILE *file = fopen(filepath, "r+");
     if (file == NULL) {
-        printf("File does not exist or cannot be opened.\n");
+        printf("Error: File '%s' does not exist.\n", filepath);
         return;
     }
 
-    // Check if the file is empty
+    // Step 2: Check if the file is empty
     fseek(file, 0, SEEK_END);
-    long file_size = ftell(file);
-    if (file_size == 0) {
-        printf("File is empty.\n");
-        fclose(file);
-        return;
+    long size = ftell(file);
+    if (size == 0) {
+        // File is empty, create a new JSON object
+        cJSON *json = cJSON_CreateObject();
+        setValue(json, location, val, valType);
+
+        // Write the JSON to the file
+        char *jsonStr = cJSON_Print(json);
+        fseek(file, 0, SEEK_SET);
+        fwrite(jsonStr, strlen(jsonStr), 1, file);
+        free(jsonStr);
+
+        cJSON_Delete(json);
+    } else {
+        // File is not empty, read the existing JSON data
+        fseek(file, 0, SEEK_SET);
+        char *fileContent = (char *)malloc(size + 1);
+        fread(fileContent, size, 1, file);
+        fileContent[size] = '\0';
+
+        // Parse the existing JSON data
+        cJSON *json = cJSON_Parse(fileContent);
+        free(fileContent);
+
+        // Step 3: Update the JSON with new data
+        setValue(json, location, val, valType);
+
+        // Write the updated JSON back to the file
+        fseek(file, 0, SEEK_SET);
+        char *jsonStr = cJSON_Print(json);
+        fwrite(jsonStr, strlen(jsonStr), 1, file);
+        free(jsonStr);
+
+        cJSON_Delete(json);
     }
 
-    // Reset the file position indicator to the beginning of the file
-    rewind(file);
-
-    // Read the contents of the file into a buffer
-    char* file_contents = (char*)malloc(file_size + 1);
-    if (file_contents == NULL) {
-        printf("Memory allocation failed.\n");
-        fclose(file);
-        return;
-    }
-
-    size_t read_size = fread(file_contents, 1, file_size, file);
     fclose(file);
-
-    // Parse the file contents using cJSON
-    cJSON* root = cJSON_Parse(file_contents);
-    if (root == NULL) {
-        printf("Failed to parse JSON.\n");
-        free(file_contents);
-        return;
-    }
-
-    // Access and modify the JSON data as needed
-    cJSON* name = cJSON_GetObjectItemCaseSensitive(root, "name");
-    if (cJSON_IsString(name)) {
-        cJSON_ReplaceItemInObjectCaseSensitive(root, "name", cJSON_CreateString("Jane Doe"));
-    }
-
-    cJSON* age = cJSON_GetObjectItemCaseSensitive(root, "age");
-    if (cJSON_IsNumber(age)) {
-        cJSON_SetNumberValue(age, 30);
-    }
-
-    cJSON* hobbies = cJSON_GetObjectItemCaseSensitive(root, "hobbies");
-    if (cJSON_IsArray(hobbies)) {
-        cJSON* newHobby = cJSON_CreateString("Painting");
-        cJSON_AddItemToArray(hobbies, newHobby);
-    }
-
-    // Convert cJSON object to a JSON string
-    char* modifiedJsonString = cJSON_Print(root);
-
-    // Open the file in write mode
-    file = fopen(file_path, "w");
-    if (file == NULL) {
-        printf("File cannot be opened for writing.\n");
-        cJSON_Delete(root);
-        free(file_contents);
-        free(modifiedJsonString);
-        return;
-    }
-
-    // Write the modified JSON string to the file
-    fprintf(file, "%s", modifiedJsonString);
-    fclose(file);
-
-    // Clean up memory
-    cJSON_Delete(root);
-    free(file_contents);
-    free(modifiedJsonString);
-
-    printf("File successfully updated.\n");
 }
