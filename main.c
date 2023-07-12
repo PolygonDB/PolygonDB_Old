@@ -4,6 +4,7 @@
 #include "utilities/splitstrings.c"
 #include "utilities/record.c"
 #include "utilities/structparse.c"
+#include "utilities/search.c"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -74,6 +75,8 @@ int main() {
 
             if(strcmp(inputdata.Act, "record") == 0) {
                 record(inputdata.Dbname, inputdata.Loc, inputdata.Val, inputdata.ValType);
+            }else if(strcmp(inputdata.Act, "search") == 0) {
+                search(inputdata.Dbname, inputdata.Loc, inputdata.Val, inputdata.ValType);
             }
 
             free((void*)inputdata.Dbname);
