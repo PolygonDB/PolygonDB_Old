@@ -4,8 +4,8 @@
 #include "../cJSON.h"
 
 
-void search(const char *dbname, const char *location,void *val, ValueType valType ){
-
+void search(const char *dbname,void *val, const char *key, ValueType valType ){
+printf("Searching for %s in %s\n", val, dbname);
 char filepath[100];
     sprintf(filepath, "databases/%s.json", dbname);
     FILE *file = fopen(filepath, "r+");

@@ -76,7 +76,7 @@ int main() {
             if(strcmp(inputdata.Act, "record") == 0) {
                 record(inputdata.Dbname, inputdata.Loc, inputdata.Val, inputdata.ValType);
             }else if(strcmp(inputdata.Act, "search") == 0) {
-                search(inputdata.Dbname, inputdata.Loc, inputdata.Val, inputdata.ValType);
+                search(inputdata.Dbname, inputdata.Val, inputdata.Key,inputdata.ValType);
             }
 
             free((void*)inputdata.Dbname);
