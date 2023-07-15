@@ -76,7 +76,8 @@ int main() {
             if(strcmp(inputdata.Act, "record") == 0) {
                 record(inputdata.Dbname, inputdata.Loc, inputdata.Val, inputdata.ValType);
             }else if(strcmp(inputdata.Act, "search") == 0) {
-                search(inputdata.Dbname, inputdata.Val, inputdata.Key,inputdata.ValType);
+                printf("Looking for Val %s as Key: %s\n", inputdata.Val, inputdata.Loc);
+                search(inputdata.Dbname, inputdata.Val, inputdata.Loc,inputdata.ValType);
             }
 
             free((void*)inputdata.Dbname);

@@ -30,33 +30,28 @@ char filepath[100];
         // Parse the existing JSON data
         cJSON *json = cJSON_Parse(fileContent);
         free(fileContent);
-        printf("File parsed!\n");
         // check schema for key
         cJSON *schema = cJSON_GetObjectItemCaseSensitive(json, "schema");
         if (schema == NULL) {
             printf("Error: Schema not found.\n");
             return;
         }
-        printf("%s\n", cJSON_Print(schema));
         // check schema array for key
         cJSON *schemaItem = NULL;
         cJSON_ArrayForEach(schemaItem, schema) {
-            printf("Schema item: %s\n", cJSON_Print(schemaItem));
             cJSON *keyItem = cJSON_GetObjectItemCaseSensitive(schemaItem, "key");
-            printf("Key: %s\n", cJSON_Print(keyItem));
             if (keyItem == NULL) {
                 printf("Error: Key not found in schema.\n");
                 return;
             }
             // check if key matches the key we are looking for
-            printf("Key: %s\n", keyItem->valuestring);
             if( strcmp(keyItem->valuestring, key) == 0) {
                 printf("Key found in schema!\n");
                 break;
             }
         }
 
-        printf("Passed schema check!\n");
+        // printf("Passed schema check!\n");
         // loop through the rows array
         cJSON *rows = cJSON_GetObjectItemCaseSensitive(json, "rows");
         if (rows == NULL) {
@@ -75,6 +70,7 @@ char filepath[100];
                 printf("Val found in row!\n");
                 // print the row
                 char *result = cJSON_Print(rowItem);
+                printf("Row: %s\n", result);
                 break;
             }
         }
