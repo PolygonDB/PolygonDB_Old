@@ -99,15 +99,24 @@ void record(const char *dbname, const char *location, void *val, ValueType valTy
 
         // Step 3: Update the JSON with new data
         setValue(json, location, val, valType);
-
-        // Write the updated JSON back to the file
+// empty the file contents to prepare for writing
+    fclose(file);
+    file = fopen(filepath, "w");
+    if (file == NULL) {
+        printf("Error: Failed to open file for writing.\n");
+        return;
+    }
+    // Write the updated JSON back to the file
         fseek(file, 0, SEEK_SET);
         char *jsonStr = cJSON_Print(json);
+        // printf("jsonStr: %s\n", jsonStr);
         fwrite(jsonStr, strlen(jsonStr), 1, file);
         free(jsonStr);
-
         cJSON_Delete(json);
+        fclose(file);
+        return "Record Success!";
     }
 
     fclose(file);
+
 }

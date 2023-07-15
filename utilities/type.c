@@ -11,7 +11,7 @@ typedef struct {
     const char* Dbname;
     const char* Loc;
     const char* Act;
-    const char* Key;
+    const int* Row;
     void* Val;
     ValueType ValType;
 } Input;

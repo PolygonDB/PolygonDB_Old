@@ -55,7 +55,10 @@ void parseInputJson(const char* jsonString, Input* input) {
     if (cJSON_IsString(act)) {
         input->Act = strdup(act->valuestring);
     }
-
+    cJSON* row = cJSON_GetObjectItemCaseSensitive(root, "row");
+    if (row != NULL) {
+        input->Row = row->valueint;
+    }
     cJSON* val = cJSON_GetObjectItemCaseSensitive(root, "value");
     if (val != NULL) {
         sassignJsonValue(val, &input->Val, &input->ValType);

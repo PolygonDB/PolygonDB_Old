@@ -5,7 +5,6 @@
 
 
 void search(const char *dbname,void *val, const char *key, ValueType valType ){
-printf("Searching for %s in %s\n", val, dbname);
 char filepath[100];
     sprintf(filepath, "databases/%s.json", dbname);
     FILE *file = fopen(filepath, "r+");
@@ -13,7 +12,6 @@ char filepath[100];
         printf("Error: File '%s' does not exist.\n", filepath);
         return;
     }
-        printf("File exists! Scanning for Val.\n");
         fseek(file, 0, SEEK_END);
     long size = ftell(file);
     if (size == 0) {
@@ -46,7 +44,6 @@ char filepath[100];
             }
             // check if key matches the key we are looking for
             if( strcmp(keyItem->valuestring, key) == 0) {
-                printf("Key found in schema!\n");
                 break;
             }
         }
@@ -67,10 +64,10 @@ char filepath[100];
             }
             // check if key matches the key we are looking for
             if( strcmp(valItem->valuestring, val) == 0) {
-                printf("Val found in row!\n");
                 // print the row
                 char *result = cJSON_Print(rowItem);
                 printf("Row: %s\n", result);
+                return result;
                 break;
             }
         }
