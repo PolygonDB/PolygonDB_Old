@@ -5,6 +5,7 @@
 #include "utilities/record.c"
 #include "utilities/structparse.c"
 #include "utilities/search.c"
+#include "utilities/remove.c"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -48,8 +49,9 @@ int main() {
 
             printf("Dbname: %s\n", inputdata.Dbname);
             printf("Loc: %s\n", inputdata.Loc);
+            printf("Row: %d\n", inputdata.Row);
             printf("Act: %s\n", inputdata.Act);
-
+            if(inputdata.ValType != NULL) {
             switch (inputdata.ValType) {
                 case TYPE_INT:
                     printf("Value (int): %d\n", *((int*)inputdata.Val));
@@ -72,12 +74,14 @@ int main() {
                 default:
                     printf("Unknown value type.\n");
             }
-
+            }
             if(strcmp(inputdata.Act, "record") == 0) {
                 record(inputdata.Dbname, inputdata.Loc, inputdata.Val, inputdata.ValType);
-            }else if(strcmp(inputdata.Act, "search") == 0) {
-                printf("Looking for Val %s as Key: %s\n", inputdata.Val, inputdata.Loc);
+            }if(strcmp(inputdata.Act, "search") == 0) {
                 search(inputdata.Dbname, inputdata.Val, inputdata.Loc,inputdata.ValType);
+            }if(strcmp(inputdata.Act, "remove") == 0){
+                printf("Removing\n");
+                removeRow(inputdata.Dbname, inputdata.Row);
             }
 
             free((void*)inputdata.Dbname);
