@@ -6,6 +6,7 @@
 #include "utilities/structparse.c"
 #include "utilities/search.c"
 #include "utilities/remove.c"
+#include "utilities/appened.c"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -80,10 +81,10 @@ int main() {
             }if(strcmp(inputdata.Act, "search") == 0) {
                 search(inputdata.Dbname, inputdata.Val, inputdata.Loc,inputdata.ValType);
             }if(strcmp(inputdata.Act, "remove") == 0){
-                printf("Removing\n");
                 removeRow(inputdata.Dbname, inputdata.Row);
+            }if (strcmp(inputdata.Act, "appened") == 0) {
+                appened(inputdata.Dbname,inputdata.Val);
             }
-
             free((void*)inputdata.Dbname);
             free((void*)inputdata.Loc);
             free((void*)inputdata.Act);
