@@ -3,7 +3,8 @@
 #include <string.h>
 #include "../cJSON.h"
 
-void removeRow(const char *dbname,const int *row){
+void appened(const char *dbname,void *val ){
+    const cJSON *valson = cJSON_Parse(val);
 char filepath[100];
     sprintf(filepath, "databases/%s.json", dbname);
     FILE *file = fopen(filepath, "r+");
@@ -27,20 +28,14 @@ char filepath[100];
         // Parse the existing JSON data
         cJSON *json = cJSON_Parse(fileContent);
         free(fileContent);
-
-    // find the row in the rows array
+    // add the value to the rows array
     cJSON *rows = cJSON_GetObjectItemCaseSensitive(json, "rows");
     if (rows == NULL) {
         printf("Error: Rows not found.\n");
         return;
     }
-    // check if row is in bounds
-    if (row < 0 || row >= cJSON_GetArraySize(rows)) {
-        printf("Error: Row index out of bounds.\n");
-        return;
-    }
-    cJSON_DeleteItemFromArray(rows, row);
-    
+    cJSON_AddItemToArray(rows, valson);
+    // print the updated JSON
     // empty the file contents to prepare for writing
     fclose(file);
     file = fopen(filepath, "w");
@@ -51,11 +46,10 @@ char filepath[100];
     // Write the updated JSON back to the file
         fseek(file, 0, SEEK_SET);
         char *jsonStr = cJSON_Print(json);
-        // printf("jsonStr: %s\n", jsonStr);
         fwrite(jsonStr, strlen(jsonStr), 1, file);
         free(jsonStr);
         cJSON_Delete(json);
         fclose(file);
-    printf("Row deleted!\n");
-    return "Row deleted!";
+    printf("Row Added!\n");
+    return "Row Added!";
 }

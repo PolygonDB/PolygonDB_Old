@@ -26,6 +26,17 @@ void setValue(cJSON *json, const char *location, void *val, ValueType valType) {
     char *token = strtok(path, ".");
     cJSON *child = parent;
     char *lastToken = token;
+    // go through each token in the path and find the corresponding JSON object
+    while (token != NULL) {
+        child = cJSON_GetObjectItemCaseSensitive(parent, lastToken);
+        if (child == NULL) {
+            break;
+        }
+        parent = child;
+        lastToken = token;
+        token = strtok(NULL, ".");
+    }
+        printf("token: %s\n", lastToken);
 
     if (child != NULL) {
         // Update the value of an existing variable at the specified location
