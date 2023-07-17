@@ -16,7 +16,9 @@ int help() {
 
     printf("help - Displays all PolygonDB commands\n\n");
     printf("File Manipulation Commands\n");
-    printf("init (name) - Creates a json database folder\n");
+    printf("create (name) - Creates a json file\n\n");
+    printf("version - Displays the current version of PolygonDB\n\n");
+    printf("exit - Exits PolygonDB\n\n");
 
     printf("\n\n");
 
@@ -28,7 +30,8 @@ int help() {
 int main() {
     char input[9999];
     int count = 0;
-
+    // update this version number every time you make a new release and note the PULL NUMBER!
+    const VERSION = "0.0.1|BUILD-0.0.1.GHP6";
     while(1){
 
         //Beginning of Terminal
@@ -48,10 +51,6 @@ int main() {
 
             parseInputJson(input, &inputdata);
 
-            printf("Dbname: %s\n", inputdata.Dbname);
-            printf("Loc: %s\n", inputdata.Loc);
-            printf("Row: %d\n", inputdata.Row);
-            printf("Act: %s\n", inputdata.Act);
             if(inputdata.ValType != NULL) {
             switch (inputdata.ValType) {
                 case TYPE_INT:
@@ -104,8 +103,14 @@ int main() {
                 //Creates json file
                 create(result[1]);
             
+            }else if(strcmp(input, "version") == 0){
+                    //Shows version
+                    printf("PolygonDB Version %s\n", VERSION);
+            }else if(strcmp(input, "exit") == 0){
+                //Exits program
+                printf("Exiting...\n");
+                break;
             }
-
             //free result
             for (int i = 0; i < count; i++) {
                 free(result[i]);
