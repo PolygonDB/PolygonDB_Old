@@ -1,5 +1,15 @@
-#include "utilities/type.c"
+// standard c libraries
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+// C libs
 #include "cJSON.h"
+#include "wslib/include/ws.h"
+#define WS_IMPLEMENTATION
+
+
+// PolygonDB libs
+#include "utilities/type.c"
 #include "utilities/create.c"
 #include "utilities/splitstrings.c"
 #include "utilities/record.c"
@@ -7,50 +17,60 @@
 #include "utilities/search.c"
 #include "utilities/remove.c"
 #include "utilities/appened.c"
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 
-int help() {
-    printf("\nPolygonDB Commands\n\n");
 
-    printf("help - Displays all PolygonDB commands\n\n");
-    printf("File Manipulation Commands\n");
-    printf("create (name) - Creates a json file\n\n");
-    printf("version - Displays the current version of PolygonDB\n\n");
-    printf("exit - Exits PolygonDB\n\n");
+// int help() {
+//     printf("\nPolygonDB Commands\n\n");
 
-    printf("\n\n");
+//     printf("help - Displays all PolygonDB commands\n\n");
+//     printf("File Manipulation Commands\n");
+//     printf("create (name) - Creates a json file\n\n");
+//     printf("version - Displays the current version of PolygonDB\n\n");
+//     printf("exit - Exits PolygonDB\n\n");
 
-    return 0;
+//     printf("\n\n");
 
+//     return 0;
+
+// }
+
+void onopen(ws_cli_conn_t *client){
+	((void)client);
+	printf("Connected!\n");
 }
 
+void onmessage(ws_cli_conn_t *client,
+	const unsigned char *wsmsg, uint64_t size, int type)
+{
+	// ((void)client);
+	// ((void)wsmsg);
+	// ((void)size);
+	// ((void)type);
 
-int main() {
-    char input[9999];
-    int count = 0;
-    // update this version number every time you make a new release and note the PULL NUMBER!
-    const VERSION = "0.0.1|BUILD-0.0.1.GHP6";
-    while(1){
+    // update this version number every time you make a new release and note the PULL NUMBER ex ACTIVE VERSION|BUILD-ACTIVE VERSION.GHP#!
+    const VERSION = "0.0.2|BUILD-0.0.2.GHP7";
+    // set the msg to be a clone of the wsmsg
+    char msg[size + 1];
+    memcpy(msg, wsmsg, size);
+    msg[size] = '\0';
 
-        //Beginning of Terminal
-        printf(">>> ");
-        fgets(input, sizeof(input), stdin);
-        int length = strlen(input);
-        if (length > 0 && input[length - 1] == '\n') {
-            input[length - 1] = '\0';
+    printf("Received message: %s\n", msg);
+    fgets(msg, sizeof(msg), stdin);
+        int length = strlen(msg);
+        if (length > 0 && msg[length - 1] == '\n') {
+            msg[length - 1] = '\0';
         }
 
-        cJSON* root = cJSON_Parse(input);
+        cJSON* root = cJSON_Parse(msg);
         //Checks if input can be parsed.
+        printf("Checking Parse...");
         if (root != NULL) {
             
             Input inputdata;
             memset(&inputdata, 0, sizeof(inputdata));
 
-            parseInputJson(input, &inputdata);
-
+            parseInputJson(msg, &inputdata);
+            printf("Parsed");
             if(inputdata.ValType != NULL) {
             switch (inputdata.ValType) {
                 case TYPE_INT:
@@ -75,9 +95,11 @@ int main() {
                     printf("Unknown value type.\n");
             }
             }
+            printf("Action: %s\n", inputdata.Act);
             if(strcmp(inputdata.Act, "record") == 0) {
                 record(inputdata.Dbname, inputdata.Loc, inputdata.Val, inputdata.ValType);
             }if(strcmp(inputdata.Act, "search") == 0) {
+                ws_sendframe_txt(client, "test");
                 search(inputdata.Dbname, inputdata.Val, inputdata.Loc,inputdata.ValType);
             }if(strcmp(inputdata.Act, "remove") == 0){
                 removeRow(inputdata.Dbname, inputdata.Row);
@@ -90,36 +112,43 @@ int main() {
             free(inputdata.Val);
             
         } else {
-
-            char **result = fields(input, &count);
-
-            if(strcmp(input, "help") == 0){
-
-                //Shows command options
-                help();
-
-            } else if (strcmp(input, "create") == 0 && count >= 2) {
-
-                //Creates json file
-                create(result[1]);
-            
-            }else if(strcmp(input, "version") == 0){
-                    //Shows version
-                    printf("PolygonDB Version %s\n", VERSION);
-            }else if(strcmp(input, "exit") == 0){
-                //Exits program
-                printf("Exiting...\n");
-                break;
-            }
-            //free result
-            for (int i = 0; i < count; i++) {
-                free(result[i]);
-            }
-            free(result);
+            printf("Invalid input.\n");
         }
+            free(msg);
 
-    }
+}
 
-    free(input);
+void onclose(ws_cli_conn_t *client)
+{
+	((void)client);
+	printf("Disconnected!\n");
+}
+
+int main(void) {        
+	struct ws_events evs;
+	evs.onopen    = &onopen;
+	evs.onclose   = &onclose;
+	evs.onmessage = &onmessage;
+	ws_socket(&evs, 8000, 1, 1000);
+
+	/*
+	 * Periodically send ping frames in the main thread
+	 * and aborts inactive connections.
+	 */
+	while (1)
+	{
+		/*
+		 * Sends a broadcast PING with 2-DELAY MS of tolerance, i.e:
+		 * the client can miss up to 2 PINGs messages.
+		 *
+		 * The 'timeout' is specified by the time between ws_ping()
+		 * calls. In this example, 10 seconds.
+		 */
+		// printf("Sending ping...\n");
+		ws_ping(NULL, 2);
+
+		/* Sleep 10 seconds. */
+		sleep(10);
+	}
    return 0;
 }

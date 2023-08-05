@@ -1,0 +1,1 @@
+gcc .\\main.c .\\wslib\\src\\ws.c .\\wslib\\src\\handshake.c .\\wslib\\src\\sha1.c .\\wslib\\src\\base64.c -w -lWs2_32 -o polygonDB.exe
