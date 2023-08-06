@@ -47,7 +47,7 @@ void onmessage(ws_cli_conn_t *client,
 	// ((void)size);
 	// ((void)type);
 
-    // update this version number every time you make a new release and note the PULL NUMBER ex ACTIVE VERSION|BUILD-ACTIVE VERSION.GHP#!
+    // update this version number every time you make a new commit and note the PULL NUMBER ex ACTIVE VERSION|BUILD-ACTIVE VERSION.GHP#!
     const VERSION = "0.0.2|BUILD-0.0.2.GHP7";
     // set the msg to be a clone of the wsmsg
     char msg[size + 1];
@@ -55,22 +55,19 @@ void onmessage(ws_cli_conn_t *client,
     msg[size] = '\0';
 
     printf("Received message: %s\n", msg);
-    fgets(msg, sizeof(msg), stdin);
-        int length = strlen(msg);
-        if (length > 0 && msg[length - 1] == '\n') {
-            msg[length - 1] = '\0';
-        }
-
+    // fgets(msg, sizeof(msg), stdin);
+    //     int length = strlen(msg);
+    //     if (length > 0 && msg[length - 1] == '\n') {
+    //         msg[length - 1] = '\0';
+    //     }
         cJSON* root = cJSON_Parse(msg);
         //Checks if input can be parsed.
-        printf("Checking Parse...");
         if (root != NULL) {
             
             Input inputdata;
             memset(&inputdata, 0, sizeof(inputdata));
 
             parseInputJson(msg, &inputdata);
-            printf("Parsed");
             if(inputdata.ValType != NULL) {
             switch (inputdata.ValType) {
                 case TYPE_INT:
@@ -84,7 +81,6 @@ void onmessage(ws_cli_conn_t *client,
                     break;
                 case TYPE_STRING:
                     printf("Value (string): %s\n", (char*)inputdata.Val);
-                    break;
                 case TYPE_ARRAY:
                     printf("Value (array):%s\n", (char*)inputdata.Val);
                     break;
@@ -95,17 +91,24 @@ void onmessage(ws_cli_conn_t *client,
                     printf("Unknown value type.\n");
             }
             }
-            printf("Action: %s\n", inputdata.Act);
+            char *result = malloc(100);
+            printf("Dbname: %s\n", inputdata.Dbname);
+            printf("Loc: %s\n", inputdata.Loc);
+            printf("Act: %s\n", inputdata.Act);
             if(strcmp(inputdata.Act, "record") == 0) {
-                record(inputdata.Dbname, inputdata.Loc, inputdata.Val, inputdata.ValType);
-            }if(strcmp(inputdata.Act, "search") == 0) {
-                ws_sendframe_txt(client, "test");
-                search(inputdata.Dbname, inputdata.Val, inputdata.Loc,inputdata.ValType);
-            }if(strcmp(inputdata.Act, "remove") == 0){
-                removeRow(inputdata.Dbname, inputdata.Row);
-            }if (strcmp(inputdata.Act, "appened") == 0) {
-                appened(inputdata.Dbname,inputdata.Val);
+                result = record(inputdata.Dbname, inputdata.Loc, inputdata.Val, inputdata.ValType);
+            }else if(strcmp(inputdata.Act, "search") == 0) {
+                result = search(inputdata.Dbname, inputdata.Val, inputdata.Loc,inputdata.ValType);
+            }else if(strcmp(inputdata.Act, "remove") == 0){
+                result = removeRow(inputdata.Dbname, inputdata.Row);
+            }else if (strcmp(inputdata.Act, "appened") == 0) {
+                result = appened(inputdata.Dbname,inputdata.Val);
             }
+            printf("Sending Result: %s\n", result);
+            ws_sendframe_txt(client, result);
+            printf("Result Sent!\n");
+            // Clean up allocated memory
+            // free(result);
             free((void*)inputdata.Dbname);
             free((void*)inputdata.Loc);
             free((void*)inputdata.Act);
@@ -114,8 +117,8 @@ void onmessage(ws_cli_conn_t *client,
         } else {
             printf("Invalid input.\n");
         }
-            free(msg);
-
+            // free(msg);
+            printf("waiting for new msg. . .\n");
 }
 
 void onclose(ws_cli_conn_t *client)
@@ -137,18 +140,9 @@ int main(void) {
 	 */
 	while (1)
 	{
-		/*
-		 * Sends a broadcast PING with 2-DELAY MS of tolerance, i.e:
-		 * the client can miss up to 2 PINGs messages.
-		 *
-		 * The 'timeout' is specified by the time between ws_ping()
-		 * calls. In this example, 10 seconds.
-		 */
-		// printf("Sending ping...\n");
-		ws_ping(NULL, 2);
 
-		/* Sleep 10 seconds. */
-		sleep(10);
+		/* Sleep 100 seconds. */
+		sleep(100);
 	}
    return 0;
 }

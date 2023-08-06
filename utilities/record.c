@@ -72,14 +72,13 @@ void setValue(cJSON *json, const char *location, void *val, ValueType valType) {
 
 
 
-void record(const char *dbname, const char *location, void *val, ValueType valType) {
+char *record(const char *dbname, const char *location, void *val, ValueType valType) {
     // Step 1: Check if the file exists
     char filepath[100];
     sprintf(filepath, "databases/%s.json", dbname);
     FILE *file = fopen(filepath, "r+");
     if (file == NULL) {
-        printf("Error: File '%s' does not exist.\n", filepath);
-        return;
+         return *"{'error': File '%s' does not exist.'}", filepath;
     }
 
     // Step 2: Check if the file is empty
@@ -114,8 +113,7 @@ void record(const char *dbname, const char *location, void *val, ValueType valTy
     fclose(file);
     file = fopen(filepath, "w");
     if (file == NULL) {
-        printf("Error: Failed to open file for writing.\n");
-        return;
+        return *"{'error': Failed to open file for writing.'}";
     }
     // Write the updated JSON back to the file
         fseek(file, 0, SEEK_SET);
@@ -125,7 +123,7 @@ void record(const char *dbname, const char *location, void *val, ValueType valTy
         free(jsonStr);
         cJSON_Delete(json);
         fclose(file);
-        return "Record Success!";
+        return "{'msg':'Record Success!'}";
     }
 
     fclose(file);
