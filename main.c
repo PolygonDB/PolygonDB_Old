@@ -81,6 +81,7 @@ void onmessage(ws_cli_conn_t *client,
                     break;
                 case TYPE_STRING:
                     printf("Value (string): %s\n", (char*)inputdata.Val);
+                    break;
                 case TYPE_ARRAY:
                     printf("Value (array):%s\n", (char*)inputdata.Val);
                     break;
@@ -96,7 +97,7 @@ void onmessage(ws_cli_conn_t *client,
             printf("Loc: %s\n", inputdata.Loc);
             printf("Act: %s\n", inputdata.Act);
             if(strcmp(inputdata.Act, "record") == 0) {
-                result = record(inputdata.Dbname, inputdata.Loc, inputdata.Val, inputdata.ValType);
+                result = record(inputdata.Dbname, inputdata.Loc, inputdata.Row, inputdata.Val, inputdata.ValType);
             }else if(strcmp(inputdata.Act, "search") == 0) {
                 result = search(inputdata.Dbname, inputdata.Val, inputdata.Loc,inputdata.ValType);
             }else if(strcmp(inputdata.Act, "remove") == 0){

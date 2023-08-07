@@ -19,60 +19,36 @@ cJSON *createValue(void *val, ValueType valType) {
     }
 }
 
-void setValue(cJSON *json, const char *location, void *val, ValueType valType) {
-    cJSON *parent = json;
-
-    char *path = strdup(location);
-    char *token = strtok(path, ".");
-    cJSON *child = parent;
-    char *lastToken = token;
-    // go through each token in the path and find the corresponding JSON object
-    while (token != NULL) {
-        child = cJSON_GetObjectItemCaseSensitive(parent, lastToken);
-        if (child == NULL) {
-            break;
-        }
-        parent = child;
-        lastToken = token;
-        token = strtok(NULL, ".");
+void setValue(cJSON *json, const int *row, const char *location, void *val, ValueType valType) {
+   // step one go to the targeted row
+   cJSON *rows = cJSON_GetObjectItemCaseSensitive(json, "rows");
+    if (rows == NULL) {
+         rows = cJSON_AddArrayToObject(json, "rows");
     }
-        printf("token: %s\n", lastToken);
-
-    if (child != NULL) {
-        // Update the value of an existing variable at the specified location
-        switch (valType) {
-            case TYPE_INT:
-                cJSON_ReplaceItemInObject(parent, lastToken, cJSON_CreateNumber(*(int *)val));
-                break;
-            case TYPE_DOUBLE:
-                cJSON_ReplaceItemInObject(parent, lastToken, cJSON_CreateNumber(*(double *)val));
-                break;
-            case TYPE_BOOL:
-                cJSON_ReplaceItemInObject(parent, lastToken, cJSON_CreateBool(*(int *)val));
-                break;
-            case TYPE_STRING:
-                cJSON_ReplaceItemInObject(parent, lastToken, cJSON_CreateString((char *)val));
-                break;
-            case TYPE_ARRAY:
-                cJSON_ReplaceItemInObject(parent, lastToken, cJSON_CreateString((char *)val));
-                break;
-            case TYPE_OBJECT:
-                cJSON_ReplaceItemInObject(parent, lastToken, cJSON_CreateString((char *)val));
-                break;
-            default:
-                break;
-        }
-    } else {
-        // Add a new variable to the JSON at the specified location
-        cJSON_AddItemToObject(parent, lastToken, createValue(val, valType));
+    cJSON *rowItem = cJSON_GetArrayItem(rows, *row);
+    // chcek if the row exists
+    if (rowItem == NULL) {
+        rowItem = cJSON_CreateObject();
+        cJSON_AddItemToArray(rows, rowItem);
     }
-
-    free(path);
+    printf("rowItem: %s\n", cJSON_Print(rowItem));
+    // step two go to the targeted location
+    cJSON *locationItem = cJSON_GetObjectItemCaseSensitive(rowItem, location);
+    if (locationItem == NULL) {
+        locationItem = cJSON_AddObjectToObject(rowItem, location);
+    }
+    // step three set the value
+    cJSON *valItem = createValue(val, valType);
+    if (valItem == NULL) {
+        return;
+    }
+    cJSON_ReplaceItemInObject(locationItem, location, valItem);
+    return;
 }
 
 
 
-char *record(const char *dbname, const char *location, void *val, ValueType valType) {
+char *record(const char *dbname, const char *location, const int *row, void *val, ValueType valType) {
     // Step 1: Check if the file exists
     char filepath[100];
     sprintf(filepath, "databases/%s.json", dbname);
@@ -87,7 +63,7 @@ char *record(const char *dbname, const char *location, void *val, ValueType valT
     if (size == 0) {
         // File is empty, create a new JSON object
         cJSON *json = cJSON_CreateObject();
-        setValue(json, location, val, valType);
+        setValue(json, row, location, val, valType);
 
         // Write the JSON to the file
         char *jsonStr = cJSON_Print(json);
@@ -108,7 +84,8 @@ char *record(const char *dbname, const char *location, void *val, ValueType valT
         free(fileContent);
 
         // Step 3: Update the JSON with new data
-        setValue(json, location, val, valType);
+        printf("Setting value...\n");
+        setValue(json, row, location, val, valType);
 // empty the file contents to prepare for writing
     fclose(file);
     file = fopen(filepath, "w");
