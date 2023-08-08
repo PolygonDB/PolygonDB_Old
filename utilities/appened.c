@@ -9,12 +9,12 @@ char filepath[100];
     sprintf(filepath, "databases/%s.json", dbname);
     FILE *file = fopen(filepath, "r+");
     if (file == NULL) {
-        return *"{'error': 'File '%s' does not exist.'}", filepath;
+        return *"{\"error\":\"File '%s' does not exist.\"}", filepath;
     }
     fseek(file, 0, SEEK_END);
     long size = ftell(file);
     if (size == 0) {
-        return *"{'error': 'Error: File '%s' is empty.'}", filepath;
+        return *"{\"error\":\"Error: File '%s' is empty.\"}", filepath;
     }
 
     // File is not empty, read the existing JSON data
@@ -29,7 +29,7 @@ char filepath[100];
     // add the value to the rows array
     cJSON *rows = cJSON_GetObjectItemCaseSensitive(json, "rows");
     if (rows == NULL) {
-         return *"{'error': Rows not found.'}";
+         return *"{\"error\": Rows not found.\"}";
     }
     cJSON_AddItemToArray(rows, valson);
     // print the updated JSON
@@ -37,7 +37,7 @@ char filepath[100];
     fclose(file);
     file = fopen(filepath, "w");
     if (file == NULL) {
-         return *"{'error': Failed to open file for writing.'}";
+         return *"{\"error\": Failed to open file for writing.\"}";
     }
     // Write the updated JSON back to the file
         fseek(file, 0, SEEK_SET);
@@ -47,5 +47,5 @@ char filepath[100];
         cJSON_Delete(json);
         fclose(file);
     printf("Row Added!\n");
-    return "{'msg':'Success!'}";
+    return "{'msg':'Success!\"}";
 }

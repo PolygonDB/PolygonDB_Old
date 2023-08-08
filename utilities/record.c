@@ -19,19 +19,20 @@ cJSON *createValue(void *val, ValueType valType) {
     }
 }
 
-void setValue(cJSON *json, const int *row, const char *location, void *val, ValueType valType) {
+void setValue(cJSON *json, const int *rowint, const char *location, void *val, ValueType valType) {
    // step one go to the targeted row
    cJSON *rows = cJSON_GetObjectItemCaseSensitive(json, "rows");
     if (rows == NULL) {
          rows = cJSON_AddArrayToObject(json, "rows");
     }
-    cJSON *rowItem = cJSON_GetArrayItem(rows, *row);
+    printf("row int: %s\n", rowint);
+    cJSON *rowItem = cJSON_GetArrayItem(rows, rowint);
+        printf("rowItem: %s\n", cJSON_Print(rowItem));
     // chcek if the row exists
     if (rowItem == NULL) {
         rowItem = cJSON_CreateObject();
         cJSON_AddItemToArray(rows, rowItem);
     }
-    printf("rowItem: %s\n", cJSON_Print(rowItem));
     // step two go to the targeted location
     cJSON *locationItem = cJSON_GetObjectItemCaseSensitive(rowItem, location);
     if (locationItem == NULL) {
@@ -54,7 +55,7 @@ char *record(const char *dbname, const char *location, const int *row, void *val
     sprintf(filepath, "databases/%s.json", dbname);
     FILE *file = fopen(filepath, "r+");
     if (file == NULL) {
-         return *"{'error': File '%s' does not exist.'}", filepath;
+         return *"{\"error\": \"File '%s' does not exist.\"}", filepath;
     }
 
     // Step 2: Check if the file is empty
@@ -84,13 +85,14 @@ char *record(const char *dbname, const char *location, const int *row, void *val
         free(fileContent);
 
         // Step 3: Update the JSON with new data
+        printf("target row: %d\n", row);
         printf("Setting value...\n");
         setValue(json, row, location, val, valType);
 // empty the file contents to prepare for writing
     fclose(file);
     file = fopen(filepath, "w");
     if (file == NULL) {
-        return *"{'error': Failed to open file for writing.'}";
+        return *"{\"error\": \"Failed to open file for writing.\"}";
     }
     // Write the updated JSON back to the file
         fseek(file, 0, SEEK_SET);
@@ -100,7 +102,7 @@ char *record(const char *dbname, const char *location, const int *row, void *val
         free(jsonStr);
         cJSON_Delete(json);
         fclose(file);
-        return "{'msg':'Record Success!'}";
+        return "{\"msg\":\"Record Success!\"}";
     }
 
     fclose(file);

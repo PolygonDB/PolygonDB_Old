@@ -10,12 +10,12 @@ char filepath[100];
     sprintf(filepath, "databases/%s.json", dbname);
     FILE *file = fopen(filepath, "r+");
     if (file == NULL) {
-        return *"{'error': 'DB does not exist.'";
+        return *"{\"error\":\"DB does not exist.\"}";
     }
         fseek(file, 0, SEEK_END);
     long size = ftell(file);
     if (size == 0) {
-        return *"{'error': 'DB is empty.'}";
+        return *"{\"error\":\"DB is empty.\"}";
     }
 
     // File is not empty, read the existing JSON data
@@ -29,7 +29,7 @@ char filepath[100];
         // check schema for key
         cJSON *schema = cJSON_GetObjectItemCaseSensitive(json, "schema");
         if (schema == NULL) {
-        return *"{'error': 'Schema not found.'}";
+        return *"{\"error\":\"Schema not found.\"}";
             
         }
         // check schema array for key
@@ -37,7 +37,7 @@ char filepath[100];
         cJSON_ArrayForEach(schemaItem, schema) {
             cJSON *keyItem = cJSON_GetObjectItemCaseSensitive(schemaItem, "key");
             if (keyItem == NULL) {
-                return *"{'error': 'Key not found in schema.'}";
+                return *"{\"error\":\"Key not found in schema.\"}";
                 
             }
             // check if key matches the key we are looking for
@@ -48,7 +48,7 @@ char filepath[100];
         // loop through the rows array
         cJSON *rows = cJSON_GetObjectItemCaseSensitive(json, "rows");
         if (rows == NULL) {
-            return *"{'error': 'Rows not found.'}";
+            return *"{\"error\":\"Rows not found.\"}";
             return;
         }
         cJSON *rowItem = NULL;
@@ -59,7 +59,7 @@ char filepath[100];
         cJSON_ArrayForEach(rowItem, rows) {
             cJSON *valItem = cJSON_GetObjectItemCaseSensitive(rowItem, key);
             if (valItem == NULL) {
-                return *"{'error': 'Key not found in row.'}";
+                return *"{\"error\":\"Key not found in row.\"}";
             }
             // check if key matches the key we are looking for
             if( strcmp(valItem->valuestring, val) == 0) {

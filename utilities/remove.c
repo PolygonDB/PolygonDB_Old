@@ -8,13 +8,13 @@ char filepath[100];
     sprintf(filepath, "databases/%s.json", dbname);
     FILE *file = fopen(filepath, "r+");
     if (file == NULL) {
-         return *"{'error': File '%s' does not exist.'}", filepath;
+         return *"{\"error\": File '%s' does not exist.\"}", filepath;
         return;
     }
     fseek(file, 0, SEEK_END);
     long size = ftell(file);
     if (size == 0) {
-         return *"{'error': File '%s' is empty.'}", filepath;
+         return *"{\"error\": File '%s' is empty.\"}", filepath;
         return;
     }
 
@@ -31,12 +31,12 @@ char filepath[100];
     // find the row in the rows array
     cJSON *rows = cJSON_GetObjectItemCaseSensitive(json, "rows");
     if (rows == NULL) {
-         return *"{'error': Rows not found.'}";
+         return *"{\"error\": Rows not found.\"}";
         return;
     }
     // check if row is in bounds
     if (row < 0 || row >= cJSON_GetArraySize(rows)) {
-         return *"{'error': Row index out of bounds.'}";
+         return *"{\"error\": \"Row index out of bounds.\"}";
         return;
     }
     cJSON_DeleteItemFromArray(rows, row);
@@ -45,7 +45,7 @@ char filepath[100];
     fclose(file);
     file = fopen(filepath, "w");
     if (file == NULL) {
-         return *"{'error': Failed to open file for writing.'}";
+         return *"{\"error\": \"Failed to open file for writing.\"}";
         return;
     }
     // Write the updated JSON back to the file
@@ -57,5 +57,5 @@ char filepath[100];
         cJSON_Delete(json);
         fclose(file);
     printf("Row deleted!\n");
-    return "{'msg': 'Success!'}";
+    return "{\"msg\": \"Success!\"}";
 }
