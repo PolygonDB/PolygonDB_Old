@@ -3,18 +3,18 @@
 #include <string.h>
 #include "../cJSON.h"
 
-void removeRow(const char *dbname,const int *row){
+char *removeRow(const char *dbname,const int *row){
 char filepath[100];
     sprintf(filepath, "databases/%s.json", dbname);
     FILE *file = fopen(filepath, "r+");
     if (file == NULL) {
-        printf("Error: File '%s' does not exist.\n", filepath);
+         return *"{\"error\": File '%s' does not exist.\"}", filepath;
         return;
     }
     fseek(file, 0, SEEK_END);
     long size = ftell(file);
     if (size == 0) {
-        printf("Error: File '%s' is empty.\n", filepath);
+         return *"{\"error\": File '%s' is empty.\"}", filepath;
         return;
     }
 
@@ -31,12 +31,12 @@ char filepath[100];
     // find the row in the rows array
     cJSON *rows = cJSON_GetObjectItemCaseSensitive(json, "rows");
     if (rows == NULL) {
-        printf("Error: Rows not found.\n");
+         return *"{\"error\": Rows not found.\"}";
         return;
     }
     // check if row is in bounds
     if (row < 0 || row >= cJSON_GetArraySize(rows)) {
-        printf("Error: Row index out of bounds.\n");
+         return *"{\"error\": \"Row index out of bounds.\"}";
         return;
     }
     cJSON_DeleteItemFromArray(rows, row);
@@ -45,7 +45,7 @@ char filepath[100];
     fclose(file);
     file = fopen(filepath, "w");
     if (file == NULL) {
-        printf("Error: Failed to open file for writing.\n");
+         return *"{\"error\": \"Failed to open file for writing.\"}";
         return;
     }
     // Write the updated JSON back to the file
@@ -57,5 +57,5 @@ char filepath[100];
         cJSON_Delete(json);
         fclose(file);
     printf("Row deleted!\n");
-    return "Row deleted!";
+    return "{\"msg\": \"Success!\"}";
 }
